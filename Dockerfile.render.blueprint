@@ -1,0 +1,42 @@
+FROM node:20-alpine
+
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    build-base \
+    cairo-dev \
+    pango-dev \
+    chromium
+
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
+ENV PUPPETEER_SKIP_DOWNLOAD=true
+ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
+ENV NODE_OPTIONS=--max-old-space-size=8192
+ENV HUSKY=0
+ENV CI=true
+
+RUN corepack enable && corepack prepare pnpm@10.26.0 --activate
+
+WORKDIR /usr/src/flowise
+
+# Copy only dependency manifests first so Docker can cache install layers.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY packages/server/package.json ./packages/server/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
+COPY packages/components/package.json ./packages/components/package.json
+
+RUN pnpm install --frozen-lockfile --prefer-offline
+
+# Copy source only after dependencies are installed.
+COPY . .
+
+RUN pnpm build && pnpm store prune
+
+USER node
+
+EXPOSE 3000
+
+CMD ["pnpm", "start"]
