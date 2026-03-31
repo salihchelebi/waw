@@ -21,6 +21,9 @@ projects:
               mountPath: /var/data
               sizeGB: 1
             envVars:
+              # [TALİMAT NO: 3 | TALİMAT ADI: FLOWISE_FILE_STORAGE_PATH KEY’İNİ PRIMARY RENDER HATTINDA AÇIKÇA TANIMLA] Bu açıklama, primary Render hattında file storage root key’inin görünür hale getirildiğini gösterir.
+              - key: FLOWISE_FILE_STORAGE_PATH
+                value: /var/data/.flowise
               - key: DATABASE_URL
                 sync: false
               - key: PORT
