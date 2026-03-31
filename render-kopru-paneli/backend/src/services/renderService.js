@@ -166,7 +166,7 @@ export async function getEnvNames() {
   try {
     const envVars = await renderFetch(`/services/${process.env.RENDER_SERVICE_ID}/env-vars`);
     if (!envVars) {
-      return ['RENDER_API_KEY', 'RENDER_SERVICE_ID', 'GITHUB_TOKEN'];
+      return ['RENDER_API_KEY', 'RENDER_SERVICE_ID', 'Nekot_Buhtig'];
     }
 
     const names = normalizeEnvNames(envVars);
