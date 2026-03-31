@@ -1,0 +1,25 @@
+name: render-validate
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'render.yaml'
+      - 'Dockerfile'
+      - 'Dockerfile.render'
+      - 'Dockerfile.render.blueprint'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+      - 'packages/**'
+  workflow_dispatch:
+
+jobs:
+  docker-build-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build blueprint Docker image
+        run: docker build -f Dockerfile.render.blueprint -t waw-render-blueprint .
