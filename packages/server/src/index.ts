@@ -96,26 +96,6 @@ export class App {
             this.identityManager = await IdentityManager.getInstance()
             logger.info('🔐 [server]: Identity Manager initialized successfully')
 
-            // ... (dosyanın geri kalanı aynen)
-        } catch (error) {
-            logger.error('❌ [server]: Error during Data Source initialization:', error)
-        }
-    }
-}
-    async initDatabase() {
-        // Initialize database
-        try {
-            await this.AppDataSource.initialize()
-            logger.info('📦 [server]: Data Source initialized successfully')
-
-            // Run Migrations Scripts
-            await this.AppDataSource.runMigrations({ transaction: 'each' })
-            logger.info('🔄 [server]: Database migrations completed successfully')
-
-            // Initialize Identity Manager
-            this.identityManager = await IdentityManager.getInstance()
-            logger.info('🔐 [server]: Identity Manager initialized successfully')
-
             // Initialize nodes pool
             this.nodesPool = new NodesPool()
             await this.nodesPool.initialize()
