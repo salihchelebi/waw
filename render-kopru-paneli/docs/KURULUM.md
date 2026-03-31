@@ -38,9 +38,3 @@ Frontend açıldıktan sonra üstteki “Backend API Adresi” alanına backend 
 - Örnek: `https://render-kopru-paneli-backend.onrender.com/api`
 - Kaydet butonuna basınca adres localStorage’da saklanır.
 - Frontend ve backend linkleri farklı domainlerde olabilir.
-
-
-## 6) GitHub Actions Secret Notu
-- CI/CD içinde secret gerektiğinde repository/environment secrets kısmına **`Nekot_Buhtig`** olarak ekleyin.
-- Workflow içinde bu secret değeri env olarak backend süreçlerine geçirilmelidir.
-- Secret değeri commit, log veya artefakt içine yazılmamalıdır.
