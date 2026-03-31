@@ -8,6 +8,7 @@ npm start
 ```
 
 ## 2) Backend env değişkenleri
+Backend açılırken şu sırayla env dosyası okunur: `backend/.env` → `render-kopru-paneli/.env` → `render-kopru-paneli/.env.example`.
 `.env.example` içindeki anahtarları kullan.
 - **Zorunlu (Render verisi için):** `RENDER_API_KEY`, `RENDER_SERVICE_ID`
 - **Opsiyonel:** `RENDER_SERVICE_NAME`, `Nekot_Buhtig`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH` (varsayılan: `main`)

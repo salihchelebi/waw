@@ -1,4 +1,4 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 import cors from 'cors';
 import express from 'express';
 import { existsSync } from 'fs';
@@ -21,8 +21,22 @@ app.use(express.json());
 // [TALİMAT NO: 14 | TALİMAT ADI: RENDER BLUEPRINT VE ENV ZİNCİRİNİ TAMAMLA] Bu açıklama, backend deploy zincirinin eksiksiz kurulması için eklendi.
 // [TALİMAT NO: 17 | TALİMAT ADI: GEÇİCİ DOSYA VE KALINTILARI TEMİZLE] Bu açıklama, teslimde yalnızca gerekli dosyaların bırakılması için eklendi.
 
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+const envCandidates = [
+  path.resolve(__dirname, '../.env'),
+  path.resolve(__dirname, '../../.env'),
+  path.resolve(__dirname, '../../.env.example')
+];
+
+for (const envPath of envCandidates) {
+  if (existsSync(envPath)) {
+    dotenv.config({ path: envPath, override: false });
+  }
+}
+
 const frontendDir = path.resolve(__dirname, '../../frontend');
 
 if (existsSync(path.join(frontendDir, 'index.html'))) {
