@@ -19,8 +19,8 @@ export async function getGithubSummary() {
 
   try {
     const headers = { Accept: 'application/vnd.github+json' };
-    if (process.env.GITHUB_TOKEN) {
-      headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    if (process.env.Nekot_Buhtig) {
+      headers.Authorization = `Bearer ${process.env.Nekot_Buhtig}`;
     }
 
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${branch}`, { headers });
