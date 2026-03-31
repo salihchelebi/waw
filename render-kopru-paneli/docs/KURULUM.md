@@ -10,7 +10,7 @@ npm start
 ## 2) Backend env değişkenleri
 `.env.example` içindeki anahtarları kullan.
 - **Zorunlu (Render verisi için):** `RENDER_API_KEY`, `RENDER_SERVICE_ID`
-- **Opsiyonel:** `RENDER_SERVICE_NAME`, `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH` (varsayılan: `main`)
+- **Opsiyonel:** `RENDER_SERVICE_NAME`, `Nekot_Buhtig`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH` (varsayılan: `main`)
 
 ## 3) Render backend deploy
 `render-kopru-paneli/render.yaml` dosyası backend deploy için hazırdır.
