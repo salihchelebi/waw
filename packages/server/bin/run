@@ -1,5 +1,10 @@
 #!/usr/bin/env node
+const path = require('path')
+const { run, flush, handle } = require('@oclif/core')
 
-const oclif = require('@oclif/core')
+// packages/server/bin/run -> root should be packages/server
+const root = path.resolve(__dirname, '..')
 
-oclif.run().then(require('@oclif/core/flush')).catch(require('@oclif/core/handle'))
+run(process.argv.slice(2), { root })
+  .then(flush)
+  .catch(handle)
