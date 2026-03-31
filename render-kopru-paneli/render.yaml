@@ -14,7 +14,7 @@ services:
         sync: false
       - key: RENDER_SERVICE_NAME
         value: ornek-servis
-      - key: GITHUB_TOKEN
+      - key: Nekot_Buhtig
         sync: false
       - key: GITHUB_OWNER
         sync: false
