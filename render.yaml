@@ -16,8 +16,13 @@ projects:
             branch: main
             dockerContext: .
             dockerfilePath: ./Dockerfile.render.blueprint
+            dockerCommand: /bin/sh -lc "sh ./scripts/render-start.sh"
             healthCheckPath: /api/v1/ping
             autoDeployTrigger: commit
+            disk:
+              name: flowise-data
+              mountPath: /var/data
+              sizeGB: 1
             envVars:
               - key: STORAGE_TYPE
                 sync: false
@@ -79,3 +84,9 @@ projects:
                 sync: false
               - key: HOST
                 sync: false
+              - key: VITE_NETLIFY_LITE
+                value: "false"
+              - key: LANGCHAIN_CALLBACKS_BACKGROUND
+                value: "true"
+              - key: FLOWISE_FILE_STORAGE_PATH
+                value: /var/data/.flowise
