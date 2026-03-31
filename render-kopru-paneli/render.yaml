@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: render-kopru-paneli-backend
+    runtime: node
+    rootDir: render-kopru-paneli/backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: RENDER_API_KEY
+        sync: false
+      - key: RENDER_SERVICE_ID
+        sync: false
+      - key: RENDER_SERVICE_NAME
+        value: ornek-servis
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: GITHUB_OWNER
+        sync: false
+      - key: GITHUB_REPO
+        sync: false
+      - key: GITHUB_BRANCH
+        value: main
