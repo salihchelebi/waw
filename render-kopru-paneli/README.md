@@ -18,7 +18,7 @@ Bu proje, mevcut uygulamadan tamamen izole bir paneldir. Frontend tek sayfa Tür
 
 ## Zorunlu / Opsiyonel ENV
 - **Zorunlu (canlı Render verisi için):** `RENDER_API_KEY`, `RENDER_SERVICE_ID`
-- **Opsiyonel:** `RENDER_SERVICE_NAME`, `GITHUB_TOKEN`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH`
+- **Opsiyonel:** `RENDER_SERVICE_NAME`, `Nekot_Buhtig`, `GITHUB_OWNER`, `GITHUB_REPO`, `GITHUB_BRANCH`
 
 Detaylar:
 - `docs/KURULUM.md`
