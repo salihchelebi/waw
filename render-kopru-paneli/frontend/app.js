@@ -32,6 +32,14 @@ function trimSlash(url) {
   return (url || '').trim().replace(/\/+$/, '');
 }
 
+function normalizeApiBase(url) {
+  const cleaned = trimSlash(url);
+  if (!cleaned) return '';
+  if (/\/api$/i.test(cleaned)) return cleaned;
+  if (/^https?:\/\//i.test(cleaned)) return `${cleaned}/api`;
+  return cleaned;
+}
+
 function inferDefaultApiBase() {
   const originApi = `${window.location.origin}/api`;
   if (window.location.protocol.startsWith('http')) {
@@ -41,10 +49,10 @@ function inferDefaultApiBase() {
 }
 
 function getApiBase() {
-  const fromWindow = trimSlash(window.API_BASE);
+  const fromWindow = normalizeApiBase(window.API_BASE);
   if (fromWindow) return fromWindow;
 
-  const fromStorage = trimSlash(localStorage.getItem(BACKEND_STORAGE_KEY));
+  const fromStorage = normalizeApiBase(localStorage.getItem(BACKEND_STORAGE_KEY));
   if (fromStorage) return fromStorage;
 
   return inferDefaultApiBase();
@@ -181,7 +189,7 @@ async function handleAction(action) {
 }
 
 elements.saveBackendUrl.addEventListener('click', () => {
-  const nextUrl = trimSlash(elements.backendUrl.value);
+  const nextUrl = normalizeApiBase(elements.backendUrl.value);
   if (!nextUrl) {
     setText('sonuc', 'Kaydetmek için geçerli bir backend adresi girin.', 'warn');
     return;

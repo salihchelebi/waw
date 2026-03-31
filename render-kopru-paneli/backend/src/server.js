@@ -46,6 +46,23 @@ if (existsSync(path.join(frontendDir, 'index.html'))) {
   });
 }
 
+
+app.get(['/api', '/api/'], (_req, res) => {
+  res.json({
+    message: 'API hazır. Aşağıdaki yolları kullanabilirsiniz.',
+    endpoints: [
+      '/api/health',
+      '/api/render/service',
+      '/api/render/logs',
+      '/api/render/env-names',
+      '/api/render/redeploy',
+      '/api/render/restart',
+      '/api/github/summary',
+      '/api/summary'
+    ]
+  });
+});
+
 app.use('/api', healthRoutes);
 app.use('/api', renderRoutes);
 app.use('/api', githubRoutes);
@@ -78,6 +95,12 @@ app.get('/api/summary', async (_req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+app.get('/api/*', (_req, res) => {
+  res.status(404).json({
+    message: 'API yolu bulunamadı. /api adresinde mevcut endpoint listesini görebilirsiniz.'
+  });
 });
 
 app.get('*', (_req, res) => {

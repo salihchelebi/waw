@@ -1,6 +1,8 @@
 # Kullanım Rehberi
 
 ## İlk açılış
+- `https://<backend>.onrender.com/` panel ekranını açar.
+- `https://<backend>.onrender.com/api` adresi endpoint listesi döner (boş ekran değildir).
 1. Frontend linkini aç.
 2. Gerekirse backend API adresini üstteki alana gir ve kaydet.
 3. Önce **Bağlantıyı Kontrol Et** ile doğrula.
