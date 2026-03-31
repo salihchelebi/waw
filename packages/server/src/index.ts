@@ -27,6 +27,7 @@ import { RedisEventSubscriber } from './queue/RedisEventSubscriber'
 import flowiseApiV1Router from './routes'
 import { UsageCacheManager } from './UsageCacheManager'
 import { getEncryptionKey, getNodeModulesPackagePath } from './utils'
+import { bootstrapRendero } from './utils/renderoBootstrap'
 import { API_KEY_BLACKLIST_URLS, WHITELIST_URLS } from './utils/constants'
 import logger, { expressRequestLogger } from './utils/logger'
 import { RateLimiterManager } from './utils/rateLimit'
@@ -87,6 +88,9 @@ export class App {
             // Run Migrations Scripts
             await this.AppDataSource.runMigrations({ transaction: 'each' })
             logger.info('🔄 [server]: Database migrations completed successfully')
+
+            // ✅ Rendero bootstrap (migrations sonrası)
+            await bootstrapRendero(this.AppDataSource)
 
             // Initialize Identity Manager
             this.identityManager = await IdentityManager.getInstance()
