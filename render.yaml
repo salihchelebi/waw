@@ -21,10 +21,6 @@ projects:
               mountPath: /var/data
               sizeGB: 1
             envVars:
-              - key: FLOWISE_FILE_STORAGE_PATH
-                value: /var/data/.flowise
-              - key: LANGCHAIN_CALLBACKS_BACKGROUND
-                value: "true"
               - key: DATABASE_URL
                 sync: false
               - key: PORT
