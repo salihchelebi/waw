@@ -1,0 +1,24 @@
+name: render-safe-validate
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'render.safe.yaml'
+      - 'Dockerfile.render.safe'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+      - 'scripts/render-start.js'
+      - 'packages/**'
+  workflow_dispatch:
+
+jobs:
+  docker-build-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build startup-safe Render image
+        run: docker build -f Dockerfile.render.safe -t waw-render-safe .
