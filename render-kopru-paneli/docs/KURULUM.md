@@ -38,3 +38,15 @@ Frontend açıldıktan sonra üstteki “Backend API Adresi” alanına backend 
 - Örnek: `https://render-kopru-paneli-backend.onrender.com/api`
 - Kaydet butonuna basınca adres localStorage’da saklanır.
 - Frontend ve backend linkleri farklı domainlerde olabilir.
+
+
+## 6) GitHub Actions Secret Notu
+- CI/CD içinde secret gerektiğinde repository/environment secrets kısmına **`Nekot_Buhtig`** olarak ekleyin.
+- Workflow içinde bu secret değeri env olarak backend süreçlerine geçirilmelidir.
+- Secret değeri commit, log veya artefakt içine yazılmamalıdır.
+
+
+## 7) Arayüz neden boş görünür?
+- `Cannot GET /` görüyorsanız sadece backend API ayağa kalkmış, frontend servis edilmiyor demektir.
+- Bu repo yapısında backend, `../frontend/index.html` dosyasını bulursa `/` adresinden paneli doğrudan gösterir.
+- Deploy sonrası `https://<backend>.onrender.com/` açıldığında panel görünmeli; API yolları `https://<backend>.onrender.com/api/*` olarak devam eder.

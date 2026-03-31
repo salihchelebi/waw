@@ -10,6 +10,15 @@ Bu proje, mevcut uygulamadan tamamen izole bir paneldir. Frontend tek sayfa Tür
 - `docs/`: Kurulum ve kullanım rehberi
 - `render.yaml`: Render backend blueprint
 
+
+## Hızlı Başlangıç Linkleri
+- Backend deploy sihirbazı: https://dashboard.render.com/
+- One-click Render butonu (repo): https://render.com/deploy?repo=https://github.com/salihchelebi/waw
+- Render paneli açılınca Blueprint dosyası olarak `render-kopru-paneli/render.yaml` kullanılmalıdır.
+
+
+> Not: Backend deploy edildiğinde `/` adresi artık paneli göstermeye çalışır. Eğer sadece `Cannot GET /` görürseniz frontend dosyalarının deploy paketine dahil olup olmadığını kontrol edin.
+
 ## Kısa Çalışma Akışı
 1. Backend'i Render veya yerelde çalıştır.
 2. Frontend'i statik olarak yayınla.

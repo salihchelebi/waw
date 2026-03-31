@@ -1,6 +1,9 @@
 import 'dotenv/config';
 import cors from 'cors';
 import express from 'express';
+import { existsSync } from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import githubRoutes from './routes/github.js';
 import healthRoutes from './routes/health.js';
 import renderRoutes from './routes/render.js';
@@ -17,6 +20,17 @@ app.use(express.json());
 // [TALİMAT NO: 13 | TALİMAT ADI: BACKEND PACKAGE VE ÇALIŞTIRMA AKIŞINI NETLEŞTİR] Bu açıklama, backend başlatma zincirinin yanlış dizin yüzünden kırılmaması için eklendi.
 // [TALİMAT NO: 14 | TALİMAT ADI: RENDER BLUEPRINT VE ENV ZİNCİRİNİ TAMAMLA] Bu açıklama, backend deploy zincirinin eksiksiz kurulması için eklendi.
 // [TALİMAT NO: 17 | TALİMAT ADI: GEÇİCİ DOSYA VE KALINTILARI TEMİZLE] Bu açıklama, teslimde yalnızca gerekli dosyaların bırakılması için eklendi.
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const frontendDir = path.resolve(__dirname, '../../frontend');
+
+if (existsSync(path.join(frontendDir, 'index.html'))) {
+  app.use(express.static(frontendDir));
+  app.get('/', (_req, res) => {
+    res.sendFile(path.join(frontendDir, 'index.html'));
+  });
+}
 
 app.use('/api', healthRoutes);
 app.use('/api', renderRoutes);
@@ -50,6 +64,12 @@ app.get('/api/summary', async (_req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+app.get('*', (_req, res) => {
+  res.status(404).json({
+    message: 'Sayfa bulunamadı. Panel için / adresini, API için /api/* yollarını kullanın.'
+  });
 });
 
 app.use((error, _req, res, _next) => {
