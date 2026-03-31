@@ -18,7 +18,9 @@ export const init = async (): Promise<void> => {
     if (!fs.existsSync(flowisePath)) {
         fs.mkdirSync(flowisePath)
     }
-    switch (process.env.DATABASE_TYPE) {
+    const databaseType = process.env.DATABASE_TYPE ?? (process.env.DATABASE_URL ? 'postgres' : undefined)
+
+    switch (databaseType) {
         case 'sqlite':
             homePath = process.env.DATABASE_PATH ?? flowisePath
             appDataSource = new DataSource({
@@ -65,6 +67,7 @@ export const init = async (): Promise<void> => {
         case 'postgres':
             appDataSource = new DataSource({
                 type: 'postgres',
+                url: process.env.DATABASE_URL,
                 host: process.env.DATABASE_HOST,
                 port: parseInt(process.env.DATABASE_PORT || '5432'),
                 username: process.env.DATABASE_USER,
