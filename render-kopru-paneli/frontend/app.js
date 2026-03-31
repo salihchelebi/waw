@@ -143,14 +143,14 @@ async function handleAction(action) {
     if (action === 'redeploy') {
       if (!window.confirm('Yeniden deploy başlatılsın mı?')) return;
       const result = await api('/render/redeploy', { method: 'POST' });
-      setText('sonuc', fmt(result.message), 'ok');
+      setText('sonuc', fmt(result.message), result.accepted === false ? 'warn' : 'ok');
       return;
     }
 
     if (action === 'restart') {
       if (!window.confirm('Servis yeniden başlatılsın mı?')) return;
       const result = await api('/render/restart', { method: 'POST' });
-      setText('sonuc', fmt(result.message), 'ok');
+      setText('sonuc', fmt(result.message), result.accepted === false ? 'warn' : 'ok');
       return;
     }
 

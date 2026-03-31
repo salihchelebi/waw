@@ -2,20 +2,10 @@ import { simplifyError } from '../utils/mask.js';
 
 // [TALİMAT NO: 9 | TALİMAT ADI: GITHUB ÖZETİNİ KESİNTİSİZ HALE GETİR] Bu açıklama, GitHub özetinin fallback ile güvenli çalışması için eklendi.
 export async function getGithubSummary() {
-  const owner = process.env.GITHUB_OWNER;
-  const repo = process.env.GITHUB_REPO;
+  const owner = process.env.GITHUB_OWNER || 'salihchelebi';
+  const repo = process.env.GITHUB_REPO || 'waw';
   const branch = process.env.GITHUB_BRANCH || 'main';
-  const repoUrl = owner && repo ? `https://github.com/${owner}/${repo}` : 'https://github.com/';
-
-  if (!owner || !repo) {
-    return {
-      mode: 'fallback',
-      branch,
-      lastCommit: 'GitHub owner/repo bilgisi eksik.',
-      repoUrl,
-      committedAt: null
-    };
-  }
+  const repoUrl = `https://github.com/${owner}/${repo}`;
 
   try {
     const headers = { Accept: 'application/vnd.github+json' };
@@ -37,6 +27,13 @@ export async function getGithubSummary() {
       committedAt: data.commit?.author?.date || data.commit?.committer?.date || null
     };
   } catch (error) {
-    throw new Error(simplifyError(error, 'GitHub özeti alınamadı.'));
+    simplifyError(error, 'GitHub özeti alınamadı.');
+    return {
+      mode: 'fallback',
+      branch,
+      lastCommit: 'GitHub özeti geçici olarak alınamadı.',
+      repoUrl,
+      committedAt: null
+    };
   }
 }

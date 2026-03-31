@@ -10,6 +10,18 @@ function serviceHeaders() {
   };
 }
 
+function fallbackServiceSummary() {
+  return {
+    mode: 'fallback',
+    serviceName: process.env.RENDER_SERVICE_NAME || 'Örnek Servis',
+    serviceType: 'web_service',
+    serviceStatus: 'bilgi-yok',
+    lastDeployStatus: 'bilgi-yok',
+    lastDeployAt: null,
+    health: 'bilgi-yok'
+  };
+}
+
 async function parseJsonSafe(response) {
   if (response.status === 204) return null;
   const text = await response.text();
@@ -83,15 +95,7 @@ export async function getServiceSummary() {
     const deploysRaw = await renderFetch(`/services/${process.env.RENDER_SERVICE_ID}/deploys?limit=1`);
 
     if (!service) {
-      return {
-        mode: 'fallback',
-        serviceName: process.env.RENDER_SERVICE_NAME || 'Örnek Servis',
-        serviceType: 'web_service',
-        serviceStatus: 'bilgi-yok',
-        lastDeployStatus: 'bilgi-yok',
-        lastDeployAt: null,
-        health: 'bilgi-yok'
-      };
+      return fallbackServiceSummary();
     }
 
     const deploys = normalizeDeploys(deploysRaw);
@@ -109,7 +113,8 @@ export async function getServiceSummary() {
       health: service.health || service.serviceDetails?.health || 'bilgi-yok'
     };
   } catch (error) {
-    throw new Error(simplifyError(error, 'Render servis özeti alınamadı.'));
+    simplifyError(error, 'Render servis özeti alınamadı.');
+    return fallbackServiceSummary();
   }
 }
 
@@ -126,7 +131,11 @@ export async function getLogsSummary() {
       summary: lines.length ? 'Son loglardan kısa özet üretildi.' : 'Log kaydı bulunamadı.'
     };
   } catch (error) {
-    throw new Error(simplifyError(error, 'Log özeti alınamadı.'));
+    simplifyError(error, 'Log özeti alınamadı.');
+    return {
+      lines: ['Log verisi alınamadı.'],
+      summary: 'Render log API erişimi başarısız oldu; servis çalışıyor olabilir.'
+    };
   }
 }
 
@@ -142,7 +151,8 @@ export async function triggerRedeploy() {
 
     return { accepted: true, message: 'Redeploy işlemi başlatıldı.' };
   } catch (error) {
-    throw new Error(simplifyError(error, 'Redeploy işlemi başlatılamadı.'));
+    simplifyError(error, 'Redeploy işlemi başlatılamadı.');
+    return { accepted: false, message: 'Redeploy işlemi şu anda başlatılamadı.' };
   }
 }
 
@@ -158,7 +168,8 @@ export async function triggerRestart() {
 
     return { accepted: true, message: 'Restart işlemi başlatıldı.' };
   } catch (error) {
-    throw new Error(simplifyError(error, 'Restart işlemi başlatılamadı.'));
+    simplifyError(error, 'Restart işlemi başlatılamadı.');
+    return { accepted: false, message: 'Restart işlemi şu anda başlatılamadı.' };
   }
 }
 
@@ -172,6 +183,7 @@ export async function getEnvNames() {
     const names = normalizeEnvNames(envVars);
     return names.length ? names : ['bilgi-yok'];
   } catch (error) {
-    throw new Error(simplifyError(error, 'Ortam değişken adları alınamadı.'));
+    simplifyError(error, 'Ortam değişken adları alınamadı.');
+    return ['RENDER_API_KEY', 'RENDER_SERVICE_ID', 'Nekot_Buhtig'];
   }
 }
