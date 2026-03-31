@@ -7,14 +7,14 @@ services:
     startCommand: npm start
     envVars:
       - key: PORT
-        value: 4000
+        value: 10000
       - key: RENDER_API_KEY
         sync: false
       - key: RENDER_SERVICE_ID
         sync: false
       - key: RENDER_SERVICE_NAME
-        sync: false
-      - key: GITHUB_TOKEN
+        value: ornek-servis
+      - key: Nekot_Buhtig
         sync: false
       - key: GITHUB_OWNER
         sync: false

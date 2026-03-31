@@ -6,20 +6,17 @@ import healthRoutes from './routes/health.js';
 import renderRoutes from './routes/render.js';
 import { getGithubSummary } from './services/githubService.js';
 import { getEnvNames, getLogsSummary, getServiceSummary } from './services/renderService.js';
-import { simplifyError } from './utils/mask.js';
 
 const app = express();
-const PORT = Number(process.env.PORT || 4000);
+const PORT = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.json());
 
-// [TALİMAT NO: 1 | TALİMAT ADI: GÖREVİN KAPSAMINI DOĞRU SABİTLE] Bu açıklama, yeni yapının mevcut projeden izole tutulduğunu göstermek için eklendi.
-// [TALİMAT NO: 2 | TALİMAT ADI: EN BASİT UYGULANABİLİR MİMARİYİ KUR] Bu açıklama, tek sayfa görünüm ile güvenli backend ayrımını göstermek için eklendi.
-// [TALİMAT NO: 3 | TALİMAT ADI: PARÇALARI NEREYE KOYACAĞINI SABİTLE] Bu açıklama, klasörlerin görevlerini açık biçimde ayırmak için eklendi.
-// [TALİMAT NO: 7 | TALİMAT ADI: BACKEND UÇ NOKTALARINI MİNİMUM VE ANLAŞILIR KUR] Bu açıklama, backend uç noktalarının sade ve görev odaklı kurulduğunu göstermek için eklendi.
-// [TALİMAT NO: 8 | TALİMAT ADI: GÜVENLİK SINIRLARINI NET KORU] Bu açıklama, gizli değerlerin istemciye sızmaması için eklendi.
-// [TALİMAT NO: 10 | TALİMAT ADI: DOĞRULAMA ZİNCİRİ OLMADAN TAMAMLANDI DEME] Bu açıklama, işin test ve doğrulama olmadan bitmiş sayılmaması için eklendi.
+// [TALİMAT NO: 7 | TALİMAT ADI: SUMMARY UÇ NOKTASINI PARÇALI DAYANIKLI HALE GETİR] Bu açıklama, özet verisinin parça bazlı hata toleransı kazanması için eklendi.
+// [TALİMAT NO: 13 | TALİMAT ADI: BACKEND PACKAGE VE ÇALIŞTIRMA AKIŞINI NETLEŞTİR] Bu açıklama, backend başlatma zincirinin yanlış dizin yüzünden kırılmaması için eklendi.
+// [TALİMAT NO: 14 | TALİMAT ADI: RENDER BLUEPRINT VE ENV ZİNCİRİNİ TAMAMLA] Bu açıklama, backend deploy zincirinin eksiksiz kurulması için eklendi.
+// [TALİMAT NO: 17 | TALİMAT ADI: GEÇİCİ DOSYA VE KALINTILARI TEMİZLE] Bu açıklama, teslimde yalnızca gerekli dosyaların bırakılması için eklendi.
 
 app.use('/api', healthRoutes);
 app.use('/api', renderRoutes);
@@ -27,34 +24,29 @@ app.use('/api', githubRoutes);
 
 app.get('/api/summary', async (_req, res, next) => {
   try {
-    const [service, logs, github, envNames] = await Promise.allSettled([
+    const results = await Promise.allSettled([
       getServiceSummary(),
       getLogsSummary(),
       getGithubSummary(),
       getEnvNames()
     ]);
 
-    res.json({
-      service: service.status === 'fulfilled' ? service.value : {
-        serviceName: process.env.RENDER_SERVICE_NAME || 'Örnek Servis',
-        serviceType: 'web_service',
-        serviceStatus: 'hata',
-        lastDeployStatus: simplifyError(service.reason, 'Servis özeti alınamadı.'),
-        lastDeployAt: null,
-        health: 'hata'
-      },
-      logs: logs.status === 'fulfilled' ? logs.value : {
-        lines: ['Log özeti alınamadı.'],
-        summary: simplifyError(logs.reason, 'Log özeti alınamadı.')
-      },
-      github: github.status === 'fulfilled' ? github.value : {
-        branch: process.env.GITHUB_BRANCH || 'main',
-        lastCommit: simplifyError(github.reason, 'GitHub özeti alınamadı.'),
-        repoUrl: process.env.GITHUB_OWNER && process.env.GITHUB_REPO ? `https://github.com/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}` : 'https://github.com/',
-        committedAt: null
-      },
-      envNames: envNames.status === 'fulfilled' ? envNames.value : []
-    });
+    const issues = [];
+    const fallbackService = {
+      serviceName: 'bilgi-yok',
+      serviceType: 'bilgi-yok',
+      serviceStatus: 'eksik',
+      lastDeployStatus: 'bilgi-yok',
+      lastDeployAt: null,
+      health: 'bilgi-yok'
+    };
+
+    const service = results[0].status === 'fulfilled' ? results[0].value : (issues.push('Render Servis Özeti'), fallbackService);
+    const logs = results[1].status === 'fulfilled' ? results[1].value : (issues.push('Log Özeti'), { lines: ['bilgi-yok'], summary: 'Log özeti alınamadı.' });
+    const github = results[2].status === 'fulfilled' ? results[2].value : (issues.push('GitHub Özeti'), { branch: 'bilgi-yok', lastCommit: 'GitHub özeti alınamadı.', repoUrl: 'https://github.com/', committedAt: null });
+    const envNames = results[3].status === 'fulfilled' ? results[3].value : (issues.push('Ortam Değişkenleri Özeti'), ['bilgi-yok']);
+
+    res.json({ service, logs, github, envNames, issues });
   } catch (error) {
     next(error);
   }
@@ -62,8 +54,7 @@ app.get('/api/summary', async (_req, res, next) => {
 
 app.use((error, _req, res, _next) => {
   console.error('[kritik-hata]', error);
-  const message = simplifyError(error, 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
-  res.status(500).json({ message });
+  res.status(500).json({ message: 'İşlem tamamlanamadı. Lütfen tekrar deneyin.' });
 });
 
 app.listen(PORT, () => {
