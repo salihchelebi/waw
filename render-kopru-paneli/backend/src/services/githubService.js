@@ -1,28 +1,33 @@
 import { simplifyError } from '../utils/mask.js';
 
+function getRepoUrl(owner, repo) {
+  return owner && repo ? `https://github.com/${owner}/${repo}` : 'https://github.com/';
+}
+
 export async function getGithubSummary() {
   const owner = process.env.GITHUB_OWNER;
   const repo = process.env.GITHUB_REPO;
+  const branch = process.env.GITHUB_BRANCH || 'main';
 
   if (!owner || !repo) {
     return {
-      branch: 'main',
+      branch,
       lastCommit: 'GitHub bilgisi için owner/repo ayarlanmadı.',
-      repoUrl: 'https://github.com/',
+      repoUrl: getRepoUrl(owner, repo),
       committedAt: null
     };
   }
 
   try {
     const headers = {
-      Accept: 'application/vnd.github+json'
+      Accept: 'application/vnd.github+json',
+      'User-Agent': 'render-kopru-paneli'
     };
 
     if (process.env.GITHUB_TOKEN) {
       headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
     }
 
-    const branch = process.env.GITHUB_BRANCH || 'main';
     const response = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${branch}`, { headers });
 
     if (!response.ok) {
@@ -34,8 +39,8 @@ export async function getGithubSummary() {
     return {
       branch,
       lastCommit: data.commit?.message || 'Commit mesajı yok',
-      repoUrl: `https://github.com/${owner}/${repo}`,
-      committedAt: data.commit?.author?.date || null
+      repoUrl: getRepoUrl(owner, repo),
+      committedAt: data.commit?.author?.date || data.commit?.committer?.date || null
     };
   } catch (error) {
     throw new Error(simplifyError(error, 'GitHub özeti alınamadı.'));

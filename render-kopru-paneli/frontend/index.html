@@ -8,10 +8,20 @@
   </head>
   <body>
     <main class="container">
-      <header>
+      <header class="hero">
         <h1>Render Köprü Paneli</h1>
-        <p>Render ve GitHub durumunu tek ekrandan gör ve temel işlemleri kolayca yap.</p>
+        <p>Render ve GitHub durumunu tek ekrandan gör, backend adresini kaydet ve temel işlemleri kolayca yap.</p>
       </header>
+
+      <section class="setup card">
+        <h2>Bağlantı Ayarı</h2>
+        <label for="apiBase">Backend adresi</label>
+        <div class="setup-row">
+          <input id="apiBase" type="text" placeholder="https://ornek-backend.onrender.com/api" />
+          <button id="apiBaseKaydet">Adresi Kaydet</button>
+        </div>
+        <p id="apiBaseBilgi">Varsayılan adres: mevcut origin altında /api, yoksa localhost:4000/api</p>
+      </section>
 
       <section class="buttons">
         <button data-action="baglanti">Bağlantıyı Kontrol Et</button>

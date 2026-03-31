@@ -2,6 +2,10 @@ import { simplifyError } from '../utils/mask.js';
 
 const RENDER_API = 'https://api.render.com/v1';
 
+function hasRenderConfig() {
+  return Boolean(process.env.RENDER_API_KEY && process.env.RENDER_SERVICE_ID);
+}
+
 function headers() {
   return {
     Authorization: `Bearer ${process.env.RENDER_API_KEY || ''}`,
@@ -10,7 +14,7 @@ function headers() {
 }
 
 async function renderFetch(path, options = {}) {
-  if (!process.env.RENDER_API_KEY || !process.env.RENDER_SERVICE_ID) {
+  if (!hasRenderConfig()) {
     return null;
   }
 
@@ -26,7 +30,22 @@ async function renderFetch(path, options = {}) {
     throw new Error(`Render API hatası: ${response.status}`);
   }
 
+  if (response.status === 204) {
+    return { accepted: true };
+  }
+
   return response.json();
+}
+
+function getFallbackServiceSummary() {
+  return {
+    serviceName: process.env.RENDER_SERVICE_NAME || 'Örnek Servis',
+    serviceType: 'web_service',
+    serviceStatus: 'örnek-mod',
+    lastDeployStatus: 'bilgi-yok',
+    lastDeployAt: null,
+    health: 'bilgi-yok'
+  };
 }
 
 export async function getServiceSummary() {
@@ -35,24 +54,20 @@ export async function getServiceSummary() {
     const deploys = await renderFetch(`/services/${process.env.RENDER_SERVICE_ID}/deploys?limit=1`);
 
     if (!service || !deploys) {
-      return {
-        serviceName: process.env.RENDER_SERVICE_NAME || 'Örnek Servis',
-        serviceType: 'web_service',
-        serviceStatus: 'bilgi-yok',
-        lastDeployStatus: 'bilgi-yok',
-        lastDeployAt: null,
-        health: 'bilgi-yok'
-      };
+      return getFallbackServiceSummary();
     }
 
-    const latestDeploy = deploys[0] || {};
+    const latestDeploy = Array.isArray(deploys) ? (deploys[0] || {}) : ((deploys.deploys || [])[0] || {});
+    const isActive = service.suspended === 'not_suspended' || service.suspended === false;
+    const health = service.serviceDetails?.healthCheckPath ? 'izleniyor' : (service.health || 'bilinmiyor');
+
     return {
-      serviceName: service.name,
-      serviceType: service.type,
-      serviceStatus: service.serviceDetails?.buildPlan || service.suspended === 'not_suspended' ? 'aktif' : 'belirsiz',
+      serviceName: service.name || process.env.RENDER_SERVICE_NAME || 'Render Servisi',
+      serviceType: service.type || 'web_service',
+      serviceStatus: isActive ? 'aktif' : 'pasif-veya-belirsiz',
       lastDeployStatus: latestDeploy.status || 'bilinmiyor',
-      lastDeployAt: latestDeploy.createdAt || null,
-      health: service.health || 'bilinmiyor'
+      lastDeployAt: latestDeploy.createdAt || latestDeploy.finishedAt || null,
+      health
     };
   } catch (error) {
     throw new Error(simplifyError(error, 'Render servis özeti alınamadı.'));
@@ -66,7 +81,8 @@ export async function getLogsSummary() {
       return { lines: ['Log bilgisi yok.'], summary: 'Render API anahtarı olmadığı için örnek veri gösteriliyor.' };
     }
 
-    const lines = (logs.logs || []).slice(0, 5).map((line) => line.message || line);
+    const rawLines = Array.isArray(logs) ? logs : (logs.logs || logs.lines || []);
+    const lines = rawLines.slice(0, 5).map((line) => line.message || line.text || String(line));
     return {
       lines,
       summary: lines.length ? 'Son loglardan kısa özet hazırlandı.' : 'Log kaydı bulunamadı.'
@@ -112,10 +128,11 @@ export async function getEnvNames() {
   try {
     const envVars = await renderFetch(`/services/${process.env.RENDER_SERVICE_ID}/env-vars`);
     if (!envVars) {
-      return ['RENDER_API_KEY', 'RENDER_SERVICE_ID', 'GITHUB_TOKEN'];
+      return ['RENDER_API_KEY', 'RENDER_SERVICE_ID', 'RENDER_SERVICE_NAME', 'GITHUB_TOKEN', 'GITHUB_OWNER', 'GITHUB_REPO', 'GITHUB_BRANCH'];
     }
 
-    return (envVars || []).map((item) => item.key);
+    const items = Array.isArray(envVars) ? envVars : (envVars.envVars || []);
+    return items.map((item) => item.key).filter(Boolean);
   } catch (error) {
     throw new Error(simplifyError(error, 'Ortam değişken adları alınamadı.'));
   }

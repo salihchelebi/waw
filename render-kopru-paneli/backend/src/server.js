@@ -6,9 +6,10 @@ import healthRoutes from './routes/health.js';
 import renderRoutes from './routes/render.js';
 import { getGithubSummary } from './services/githubService.js';
 import { getEnvNames, getLogsSummary, getServiceSummary } from './services/renderService.js';
+import { simplifyError } from './utils/mask.js';
 
 const app = express();
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT || 4000);
 
 app.use(cors());
 app.use(express.json());
@@ -24,25 +25,45 @@ app.use('/api', healthRoutes);
 app.use('/api', renderRoutes);
 app.use('/api', githubRoutes);
 
-app.get('/api/summary', async (_req, res) => {
-  const [service, logs, github, envNames] = await Promise.all([
-    getServiceSummary(),
-    getLogsSummary(),
-    getGithubSummary(),
-    getEnvNames()
-  ]);
+app.get('/api/summary', async (_req, res, next) => {
+  try {
+    const [service, logs, github, envNames] = await Promise.allSettled([
+      getServiceSummary(),
+      getLogsSummary(),
+      getGithubSummary(),
+      getEnvNames()
+    ]);
 
-  res.json({
-    service,
-    logs,
-    github,
-    envNames
-  });
+    res.json({
+      service: service.status === 'fulfilled' ? service.value : {
+        serviceName: process.env.RENDER_SERVICE_NAME || 'Örnek Servis',
+        serviceType: 'web_service',
+        serviceStatus: 'hata',
+        lastDeployStatus: simplifyError(service.reason, 'Servis özeti alınamadı.'),
+        lastDeployAt: null,
+        health: 'hata'
+      },
+      logs: logs.status === 'fulfilled' ? logs.value : {
+        lines: ['Log özeti alınamadı.'],
+        summary: simplifyError(logs.reason, 'Log özeti alınamadı.')
+      },
+      github: github.status === 'fulfilled' ? github.value : {
+        branch: process.env.GITHUB_BRANCH || 'main',
+        lastCommit: simplifyError(github.reason, 'GitHub özeti alınamadı.'),
+        repoUrl: process.env.GITHUB_OWNER && process.env.GITHUB_REPO ? `https://github.com/${process.env.GITHUB_OWNER}/${process.env.GITHUB_REPO}` : 'https://github.com/',
+        committedAt: null
+      },
+      envNames: envNames.status === 'fulfilled' ? envNames.value : []
+    });
+  } catch (error) {
+    next(error);
+  }
 });
 
 app.use((error, _req, res, _next) => {
   console.error('[kritik-hata]', error);
-  res.status(500).json({ message: 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.' });
+  const message = simplifyError(error, 'Beklenmeyen bir hata oluştu. Lütfen tekrar deneyin.');
+  res.status(500).json({ message });
 });
 
 app.listen(PORT, () => {

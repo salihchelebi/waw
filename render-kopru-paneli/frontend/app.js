@@ -1,4 +1,16 @@
-const API_BASE = window.API_BASE || 'http://localhost:4000/api';
+const STORAGE_KEY = 'render-kopru-paneli-api-base';
+
+function getDefaultApiBase() {
+  if (window.API_BASE) return window.API_BASE;
+  if (window.location.protocol.startsWith('http')) {
+    return `${window.location.origin.replace(/\/$/, '')}/api`;
+  }
+  return 'http://localhost:4000/api';
+}
+
+function getApiBase() {
+  return localStorage.getItem(STORAGE_KEY) || getDefaultApiBase();
+}
 
 const elements = {
   baglanti: document.getElementById('baglanti'),
@@ -7,7 +19,10 @@ const elements = {
   log: document.getElementById('log'),
   github: document.getElementById('github'),
   env: document.getElementById('env'),
-  sonuc: document.getElementById('sonuc')
+  sonuc: document.getElementById('sonuc'),
+  apiBase: document.getElementById('apiBase'),
+  apiBaseBilgi: document.getElementById('apiBaseBilgi'),
+  apiBaseKaydet: document.getElementById('apiBaseKaydet')
 };
 
 // [TALİMAT NO: 4 | TALİMAT ADI: İLK ÇALIŞAN SÜRÜMÜN ÖZELLİK SINIRINI KORU] Bu açıklama, ilk sürümün gereksiz büyümesini önlemek için eklendi.
@@ -20,11 +35,12 @@ const elements = {
 // [TALİMAT NO: 14 | TALİMAT ADI: İŞE BAŞLAMA EMRİNİ KISA VE KESİN VER] Bu açıklama, uygulama sırasını sabitlemek için eklendi.
 
 async function api(path, options = {}) {
-  const response = await fetch(`${API_BASE}${path}`, options);
+  const response = await fetch(`${getApiBase()}${path}`, options);
+  const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error('İstek başarısız oldu.');
+    throw new Error(data.message || 'İstek başarısız oldu.');
   }
-  return response.json();
+  return data;
 }
 
 function write(id, text, cls = '') {
@@ -32,11 +48,17 @@ function write(id, text, cls = '') {
   elements[id].textContent = text;
 }
 
+function renderApiBaseInfo() {
+  const current = getApiBase();
+  elements.apiBase.value = current;
+  elements.apiBaseBilgi.textContent = `Aktif backend adresi: ${current}`;
+}
+
 async function refreshAll() {
   const data = await api('/summary');
   write('servis', `${data.service.serviceName} (${data.service.serviceType}) - ${data.service.serviceStatus}`, 'ok');
   write('deploy', `${data.service.lastDeployStatus} / ${data.service.lastDeployAt || 'zaman bilgisi yok'}`);
-  write('log', data.logs.lines?.join(' | ') || 'Log yok', 'warn');
+  write('log', data.logs.lines?.join(' | ') || 'Log yok', data.logs.lines?.length ? 'warn' : '');
   write('github', `${data.github.branch} - ${data.github.lastCommit} - ${data.github.repoUrl}`);
   write('env', (data.envNames || []).join(', ') || 'Ortam değişkeni yok');
 }
@@ -44,8 +66,8 @@ async function refreshAll() {
 async function handleAction(action) {
   try {
     if (action === 'baglanti') {
-      await api('/health');
-      write('baglanti', 'Backend ve köprü bağlantısı hazır.', 'ok');
+      const data = await api('/health');
+      write('baglanti', `${data.message} (${data.timestamp})`, 'ok');
       write('sonuc', 'Bağlantı kontrolü başarılı.', 'ok');
       return;
     }
@@ -60,13 +82,14 @@ async function handleAction(action) {
 
     if (action === 'yenile') {
       await refreshAll();
+      write('baglanti', 'Tüm veriler güncel bağlantı ile yenilendi.', 'ok');
       write('sonuc', 'Tüm kartlar yenilendi.', 'ok');
       return;
     }
 
     if (action === 'log') {
       const data = await api('/render/logs');
-      write('log', `${data.summary} ${data.lines?.join(' | ') || ''}`);
+      write('log', `${data.summary} ${data.lines?.join(' | ') || ''}`.trim(), 'warn');
       write('sonuc', 'Log özeti güncellendi.', 'ok');
       return;
     }
@@ -100,7 +123,7 @@ async function handleAction(action) {
     }
 
     if (action === 'kopyala') {
-      const text = `Bağlantı: ${elements.baglanti.textContent}\nServis: ${elements.servis.textContent}\nDeploy: ${elements.deploy.textContent}\nLog: ${elements.log.textContent}\nGitHub: ${elements.github.textContent}\nEnv: ${elements.env.textContent}`;
+      const text = `Backend: ${getApiBase()}\nBağlantı: ${elements.baglanti.textContent}\nServis: ${elements.servis.textContent}\nDeploy: ${elements.deploy.textContent}\nLog: ${elements.log.textContent}\nGitHub: ${elements.github.textContent}\nEnv: ${elements.env.textContent}`;
       await navigator.clipboard.writeText(text);
       write('sonuc', 'Durum özeti panoya kopyalandı.', 'ok');
     }
@@ -109,8 +132,20 @@ async function handleAction(action) {
   }
 }
 
+elements.apiBaseKaydet.addEventListener('click', () => {
+  const value = elements.apiBase.value.trim().replace(/\/$/, '');
+  if (!value) {
+    localStorage.removeItem(STORAGE_KEY);
+  } else {
+    localStorage.setItem(STORAGE_KEY, value);
+  }
+  renderApiBaseInfo();
+  write('sonuc', 'Backend adresi kaydedildi.', 'ok');
+});
+
 document.querySelectorAll('button[data-action]').forEach((button) => {
   button.addEventListener('click', () => handleAction(button.dataset.action));
 });
 
-write('baglanti', 'Backend bağlantısı yoksa önce Bağlantıyı Kontrol Et butonunu kullanın.', 'warn');
+renderApiBaseInfo();
+write('baglanti', 'Backend bağlantısı yoksa önce backend adresini kaydedin, sonra Bağlantıyı Kontrol Et butonunu kullanın.', 'warn');
