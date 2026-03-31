@@ -77,9 +77,29 @@ async function api(path, options = {}) {
   const response = await fetch(`${apiBase}${path}`, options);
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    throw new Error(data.message || 'İstek başarısız oldu.');
+    const error = new Error(data.message || 'İstek başarısız oldu.');
+    error.status = response.status;
+    error.path = path;
+    throw error;
   }
   return data;
+}
+
+function formatActionError(error) {
+  if (!error) return 'İşlem tamamlanamadı.';
+  if (error.message?.includes('Failed to fetch')) {
+    return 'Backend adresine ulaşılamadı. URL, CORS veya ağ bağlantısını kontrol edin.';
+  }
+  if (error.status === 401 || error.status === 403) {
+    return 'Yetki hatası oluştu. Render/GitHub secret ve erişim izinlerini kontrol edin.';
+  }
+  if (error.status === 404) {
+    return 'İstenen endpoint bulunamadı. Backend sürümü veya URL hatalı olabilir.';
+  }
+  if (error.status >= 500) {
+    return 'Sunucu içi hata oluştu. Backend loglarını kontrol edin.';
+  }
+  return error.message || 'İşlem tamamlanamadı.';
 }
 
 function renderServiceCard(service) {
@@ -183,8 +203,8 @@ async function handleAction(action) {
       setText('sonuc', 'Durum özeti panoya kopyalandı.', 'ok');
       return;
     }
-  } catch (_error) {
-    setText('sonuc', 'İşlem tamamlanamadı. Lütfen backend adresini ve bağlantıyı kontrol edin.', 'err');
+  } catch (error) {
+    setText('sonuc', formatActionError(error), 'err');
   }
 }
 
