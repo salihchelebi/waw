@@ -1,0 +1,59 @@
+:root {
+  font-family: Arial, sans-serif;
+  color: #1d1d1d;
+  background: #f3f5f8;
+}
+
+body {
+  margin: 0;
+}
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.buttons {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  margin: 20px 0;
+}
+
+button {
+  border: 1px solid #2c5cc5;
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #eaf0ff;
+}
+
+.grid {
+  display: grid;
+  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+}
+
+.card {
+  background: #fff;
+  border-radius: 10px;
+  padding: 14px;
+  border: 1px solid #d7dce6;
+}
+
+.ok::before {
+  content: '✅ ';
+}
+
+.warn::before {
+  content: '⚠️ ';
+}
+
+.err::before {
+  content: '❌ ';
+}
