@@ -1,0 +1,78 @@
+version: "1"
+projects:
+  - name: WAW
+    environments:
+      - name: Production
+        services:
+          - type: web
+            name: WAW
+            runtime: docker
+            repo: https://github.com/salihchelebi/waw
+            plan: free
+            region: frankfurt
+            branch: main
+            dockerContext: .
+            dockerfilePath: ./Dockerfile.render.safe
+            healthCheckPath: /api/v1/ping
+            autoDeployTrigger: commit
+            envVars:
+              - key: STORAGE_TYPE
+                sync: false
+              - key: DATABASE_TYPE
+                sync: false
+              - key: PORT
+                sync: false
+              - key: GITHUB_DEFAULT_BRANCH
+                sync: false
+              - key: GITHUB_REPO_URL
+                sync: false
+              - key: GITHUB_REPO_FULL
+                sync: false
+              - key: GITHUB_REPO_NAME
+                sync: false
+              - key: GITHUB_OWNER
+                sync: false
+              - key: E_MAIL
+                sync: false
+              - key: EMAIL
+                sync: false
+              - key: ADMIN_EMAIL
+                sync: false
+              - key: LOG_PATH
+                sync: false
+              - key: SECRETKEY_PATH
+                sync: false
+              - key: APIKEY_PATH
+                sync: false
+              - key: LANGCHAIN_TRACING_V2
+                sync: false
+              - key: RENDER_CLI
+                sync: false
+              - key: RENDER_API_KEY
+                sync: false
+              - key: LANGSMITH_API_KEY
+                sync: false
+              - key: TAVILY_API_KEY
+                sync: false
+              - key: OPENAI_API_KEY
+                sync: false
+              - key: DATABASE_PATH
+                sync: false
+              - key: BLOB_STORAGE_PATH
+                sync: false
+              - key: FLOWISE_ADMIN_PASSWORD
+                sync: false
+              - key: ADMIN_PASSWORD
+                sync: false
+              - key: ADMIN_USER_NAME
+                sync: false
+              - key: FLOWISE_PASSWORD
+                sync: false
+              - key: FLOWISE_USERNAME
+                sync: false
+              - key: NAME_OF_VARIABLE
+                sync: false
+              - key: NODE_VERSION
+                sync: false
+              - key: HOST
+                sync: false
