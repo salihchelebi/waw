@@ -185,11 +185,11 @@
         "@opentelemetry/sdk-trace-node": "1.27.0",
         "groq-sdk": "^0.31.0",
         "multer": "^2.0.0",
-        "multer-azure-blob-storage": "^0.2.5",
-        "multer-cloud-storage": "^1.1.1",
+        "multer-azure-blob-storage": "^1.2.0",
+        "multer-cloud-storage": "^4.0.0",
         "multer-s3": "^3.0.1",
         "turndown": "^7.2.1",
-        "winston-azure-blob": "^0.2.1",
+        "winston-azure-blob": "^1.5.0",
         "winston-daily-rotate-file": "^5.0.0"
     },
     "devDependencies": {
@@ -200,6 +200,7 @@
         "@types/lodash": "^4.17.20",
         "@types/multer": "^2.0.0",
         "@types/multer-s3": "^3.0.3",
+        "@types/node": "^20.19.0",
         "@types/node-fetch": "2.6.2",
         "@types/object-hash": "^3.0.2",
         "@types/papaparse": "^5.3.15",
