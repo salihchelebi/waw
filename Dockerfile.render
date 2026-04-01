@@ -1,34 +1,50 @@
-# Render-optimized Dockerfile for faster builds
-# Main gain: removes expensive recursive chown step seen in Render logs.
+# Render-optimized Dockerfile for minimal WAW deploy builds
+# Main goal: keep the repo intact but prevent non-core workspaces from entering
+# the primary Render install/build path.
 
 FROM node:20-alpine
 
-RUN apk update && \
-    apk add --no-cache \
-        libc6-compat \
-        python3 \
-        make \
-        g++ \
-        build-base \
-        cairo-dev \
-        pango-dev \
-        chromium \
-        curl && \
-    npm install -g pnpm
+RUN apk add --no-cache \
+    libc6-compat \
+    python3 \
+    make \
+    g++ \
+    build-base \
+    cairo-dev \
+    pango-dev \
+    chromium
 
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
 ENV PUPPETEER_SKIP_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 ENV NODE_OPTIONS=--max-old-space-size=8192
+ENV HUSKY=0
+ENV CI=true
+
+RUN corepack enable && corepack prepare pnpm@10.26.0 --activate
 
 WORKDIR /usr/src/flowise
 
-# Copy sources with target ownership up front.
-# This avoids the very slow `chown -R node:node .` step during Docker build.
-COPY --chown=node:node . .
+# Copy only dependency manifests needed by the minimal Render target.
+# This keeps optional workspaces such as agentflow and api-documentation out of
+# the initial workspace install surface.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
+COPY packages/server/package.json ./packages/server/package.json
+COPY packages/ui/package.json ./packages/ui/package.json
+COPY packages/components/package.json ./packages/components/package.json
 
-# Install and build as root, then run as node user.
-RUN pnpm install && \
-    pnpm build
+RUN pnpm install --frozen-lockfile --prefer-offline
+
+# Copy the full repo only after the minimal dependency graph is installed.
+COPY . .
+
+# Build only the packages required for the primary runtime:
+# components -> ui -> server
+RUN pnpm --filter ./packages/components build && \
+    pnpm --filter ./packages/ui build && \
+    pnpm --filter ./packages/server build && \
+    pnpm store prune
 
 USER node
 
