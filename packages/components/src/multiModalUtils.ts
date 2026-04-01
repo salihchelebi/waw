@@ -18,7 +18,7 @@ export const addImagesToMessages = async (
                 if (upload.type == 'stored-file') {
                     const contents = await getFileFromStorage(upload.name, options.orgId, options.chatflowid, options.chatId)
                     // as the image is stored in the server, read the file and convert it to base64
-                    bf = 'data:' + upload.mime + ';base64,' + contents.toString('base64')
+                    bf = 'data:' + upload.mime + ';base64,' + Buffer.from(contents).toString('base64')
 
                     imageContent.push({
                         type: 'image_url',

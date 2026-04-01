@@ -277,7 +277,7 @@ export class AzureBlobStorageProvider extends BaseStorageProvider {
             storageConfig.accessKey = process.env.AZURE_BLOB_STORAGE_ACCOUNT_KEY
         }
 
-        const azureStorage = new MulterAzureStorageWithPath(storageConfig)
+        const azureStorage = new (MulterAzureStorageWithPath as any)(storageConfig)
         return multer({ storage: azureStorage })
     }
 

@@ -739,7 +739,7 @@ export const mapChatMessageToBaseMessage = async (chatmessages: any[] = [], orgI
                         if (upload.type === 'stored-file' && upload.mime.startsWith('image/')) {
                             const fileData = await getFileFromStorage(upload.name, orgId, message.chatflowid, message.chatId)
                             // as the image is stored in the server, read the file and convert it to base64
-                            const bf = 'data:' + upload.mime + ';base64,' + fileData.toString('base64')
+                            const bf = 'data:' + upload.mime + ';base64,' + Buffer.from(fileData).toString('base64')
 
                             imageContents.push({
                                 type: 'image_url',

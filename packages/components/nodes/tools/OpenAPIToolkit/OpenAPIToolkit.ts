@@ -315,7 +315,7 @@ class OpenAPIToolkit_Tools implements INode {
                     const orgId = options.orgId
                     const chatflowid = options.chatflowid
                     const fileData = await getFileFromStorage(file, orgId, chatflowid)
-                    utf8String = fileData.toString('utf-8')
+                    utf8String = Buffer.from(fileData).toString('utf-8')
                 } else {
                     // Extract filename from data URI if possible
                     const splitDataURI = openApiFile.split(',')
