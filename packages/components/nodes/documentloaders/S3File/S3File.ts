@@ -847,7 +847,7 @@ class S3_DocumentLoaders implements INode {
             // Handle different file types
             if (this.isTextBasedFile(fileInfo.mimeType)) {
                 // Process text files directly from buffer
-                const content = buffer.toString('utf-8')
+                const content = Buffer.from(buffer).toString('utf-8')
 
                 // Create document with metadata
                 return [

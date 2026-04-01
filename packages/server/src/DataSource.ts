@@ -16,7 +16,7 @@ export const init = async (): Promise<void> => {
     let homePath
     let flowisePath = path.join(getUserHome(), '.flowise')
     if (!fs.existsSync(flowisePath)) {
-        fs.mkdirSync(flowisePath)
+        fs.mkdirSync(flowisePath, { recursive: true })
     }
     const databaseType = process.env.DATABASE_TYPE ?? (process.env.DATABASE_URL ? 'postgres' : undefined)
 
@@ -64,7 +64,8 @@ export const init = async (): Promise<void> => {
                 ssl: getDatabaseSSLFromEnv()
             })
             break
-        case 'postgres':
+        case 'postgres': {
+            const databaseUrl = process.env.DATABASE_URL
             appDataSource = new DataSource({
                 type: 'postgres',
                 url: process.env.DATABASE_URL,
@@ -90,6 +91,7 @@ export const init = async (): Promise<void> => {
                 applicationName: 'Flowise'
             })
             break
+        }
         default:
             homePath = process.env.DATABASE_PATH ?? flowisePath
             appDataSource = new DataSource({

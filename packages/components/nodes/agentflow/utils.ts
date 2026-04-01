@@ -61,7 +61,7 @@ const ARTIFACT_TYPES: Record<string, string> = {
 /** Reads a file from storage and returns a base64 data-URL string. */
 const storedFileToBase64 = async (fileName: string, mime: string, options: ICommonObject): Promise<string> => {
     const contents = await getFileFromStorage(fileName, options.orgId, options.chatflowid, options.chatId)
-    return 'data:' + mime + ';base64,' + contents.toString('base64')
+    return 'data:' + mime + ';base64,' + Buffer.from(contents).toString('base64')
 }
 
 /** Saves raw base64 data to storage as a file. Returns the file path, name, and size. */
