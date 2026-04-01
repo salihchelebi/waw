@@ -1,16 +1,8 @@
-# Render deploy (Flowise server only)
+# Render Deployment Notes
 
-## Root cause
-Render'da `/opt/render/project/src` yazılabilir olmadığı durumlarda Flowise storage bootstrap adımında boot zinciri kırılabiliyor.
-
-## Wrapper neden var?
-`scripts/render-start.sh`, storage path'i disk mount'a yönlendirip yoksa geçici `/tmp` fallback'i ile süreci başlatır. Böylece yazma işlemleri uygulama başlamadan önce güvenli path'e alınır.
-
-## `/var/data` neden kullanılıyor?
-Render disk mount kalıcıdır. `FLOWISE_FILE_STORAGE_PATH=/var/data/.flowise` ile dosya tabanlı state deploy'lar arasında korunur.
-
-## Disk yoksa ne olur?
-Fallback olarak `/tmp/.flowise` kullanılır; bu yol ephemeral'dır ve restart/deploy sonrası veri kalıcılığı garanti edilmez.
-
-## Runtime pin notu
-Storage fix doğru olsa bile runtime Node/pnpm sürümleri repo engines ile uyumlu değilse boot zinciri durur. Docker image tarafında Node 20 ve pnpm 10.26.0 pin'i korunmalıdır.
+- Root cause: `/opt/render/.flowise/storage` permission failure during Flowise/Oclif boot.
+- Fix: use `pnpm start:render` so `scripts/render-start.sh` prepares writable `HOME`/XDG/storage paths before server start.
+- Persistent disk mount path: `/var/data`.
+- Fallback without disk: `/tmp/flowise-data` (ephemeral).
+- LangSmith warning/latency mitigation: `LANGCHAIN_CALLBACKS_BACKGROUND=true`.
+- Docker deploy command override: `/bin/sh -lc "sh ./scripts/render-start.sh"`.
