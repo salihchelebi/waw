@@ -4,6 +4,10 @@ import { createContext, useContext, useEffect, useState } from 'react'
 
 const ConfigContext = createContext()
 
+const FALLBACK_SETTINGS = {
+    PLATFORM_TYPE: 'open-source'
+}
+
 export const ConfigProvider = ({ children }) => {
     const [config, setConfig] = useState({})
     const [loading, setLoading] = useState(true)
@@ -39,6 +43,11 @@ export const ConfigProvider = ({ children }) => {
             })
             .catch((error) => {
                 console.error('Error fetching data:', error)
+                // [TALİMAT NO: 7 | TALİMAT ADI: CONFIG BOOTSTRAP HATASINDA SHELL’İN AÇILMASINI GARANTİLE] Bu açıklama, config bootstrap hatasında shell render sürekliliğinin korunduğunu gösterir.
+                setConfig(FALLBACK_SETTINGS)
+                setOpenSource(true)
+                setEnterpriseLicensed(false)
+                setCloudLicensed(false)
                 setLoading(false)
             })
     }, [])
