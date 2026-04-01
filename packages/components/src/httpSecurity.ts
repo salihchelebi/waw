@@ -38,7 +38,7 @@ function getHttpDenyList(): string[] {
     const customList = httpDenyListString
         ? httpDenyListString
               .split(',')
-              .map((s) => s.trim())
+              .map((s: string) => s.trim())
               .filter(Boolean)
         : []
 
