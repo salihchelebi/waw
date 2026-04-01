@@ -41,13 +41,11 @@ COPY . .
 
 # Build only the packages required for the primary runtime:
 # components -> ui -> server
-RUN pnpm --filter ./packages/components build && \
-    pnpm --filter ./packages/ui build && \
-    pnpm --filter ./packages/server build && \
-    pnpm store prune
+RUN sh ./scripts/render-preflight.sh --build-only
+RUN pnpm store prune
 
 USER node
 
 EXPOSE 3000
 
-CMD ["pnpm", "start"]
+CMD ["pnpm", "start:render"]
