@@ -1,6 +1,3 @@
-# Render Blueprint
-# Purpose: let Render recreate the service directly from GitHub with a stable config.
-# Runtime stays docker for lowest migration risk.
 version: "1"
 projects:
   - name: WAW
@@ -24,9 +21,10 @@ projects:
               mountPath: /var/data
               sizeGB: 1
             envVars:
-              - key: STORAGE_TYPE
-                sync: false
-              - key: DATABASE_TYPE
+              # [TALİMAT NO: 3 | TALİMAT ADI: FLOWISE_FILE_STORAGE_PATH KEY’İNİ PRIMARY RENDER HATTINDA AÇIKÇA TANIMLA] Bu açıklama, primary Render hattında file storage root key’inin görünür hale getirildiğini gösterir.
+              - key: FLOWISE_FILE_STORAGE_PATH
+                value: /var/data/.flowise
+              - key: DATABASE_URL
                 sync: false
               - key: PORT
                 sync: false
