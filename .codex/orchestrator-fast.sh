@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 set -u -o pipefail
 
-HB="${HB:-0.1}"                   # 0.1sn heartbeat
+HB="${HB:-0.1}"
 MAX_RETRY="${MAX_RETRY:-2}"
 TIMEOUT_INSTALL="${TIMEOUT_INSTALL:-1200}"
+
+NODE_WANTED="${NODE_WANTED:-20.19.2}"   # repo .nvmrc ile uyumlu
+PNPM_WANTED="${PNPM_WANTED:-10.26.0}"   # repo engines ile uyumlu
 
 LOG_DIR="${LOG_DIR:-$PWD/.codex-logs}"
 mkdir -p "$LOG_DIR"
@@ -23,7 +26,6 @@ bad(){ ERR=$((ERR+1)); echo "BASARISIZ: $1"; }
 
 bump(){ DONE=$((DONE+$1)); [ "$DONE" -gt 99 ] && DONE=99; }
 
-# timeout yoksa fallback: direkt komutu koştur
 run_with_timeout(){
   local cmd="$1"
   if command -v timeout >/dev/null 2>&1; then
@@ -42,11 +44,9 @@ run_live(){
   echo "===== $label =====" | tee -a "$LOG_FILE"
   echo "CMD: $cmd" | tee -a "$LOG_FILE"
 
-  # komutu arkaya al, hem ekrana hem loga akıt
   ( run_with_timeout "$cmd" ) 2>&1 | tee -a "$LOG_FILE" &
   local pid=$!
 
-  # HER 0.1 SN YENI SATIR -> DONDU HISSI YOK
   while kill -0 "$pid" 2>/dev/null; do
     tick
     sleep "$HB"
@@ -83,14 +83,23 @@ retry(){
 }
 
 echo "START (VISIBLE 0.1s HEARTBEAT) | LOG=$LOG_FILE"
-echo "EVIDENCE: which node=$(command -v node || true)" | tee -a "$LOG_FILE"
-echo "EVIDENCE: node -v=$(node -v 2>/dev/null || true)" | tee -a "$LOG_FILE"
-echo "EVIDENCE: which pnpm=$(command -v pnpm || true)" | tee -a "$LOG_FILE"
-echo "EVIDENCE: pnpm -v=$(pnpm -v 2>/dev/null || true)" | tee -a "$LOG_FILE"
-
 bump 1; tick
 
-# 1) FAST PATH: Render'da patlayan komut
+# --- 0) NODE/Pnpm PIN (BU SENDEKİ ASIL BLOKAJ) ---
+# Node 22 + pnpm 10.13.1 -> engines yüzünden pnpm install patlıyor. :contentReference[oaicite:3]{index=3}
+if [ -s "$HOME/.nvm/nvm.sh" ]; then
+  # shellcheck disable=SC1090
+  . "$HOME/.nvm/nvm.sh" >>"$LOG_FILE" 2>&1 || true
+  retry "PIN_NODE_${NODE_WANTED}" "nvm install ${NODE_WANTED} && nvm use ${NODE_WANTED} && node -v && which node" || true
+else
+  echo "BASARISIZ: NVM YOK -> NODE PINLEYEMEM"
+  ERR=$((ERR+1))
+fi
+
+retry "PIN_PNPM_${PNPM_WANTED}" "corepack enable && corepack prepare pnpm@${PNPM_WANTED} --activate && pnpm -v && which pnpm" || true
+bump 10
+
+# 1) FAST PATH: Render'daki patlayan komut
 if retry "FAST_FROZEN_INSTALL" "pnpm install --frozen-lockfile --prefer-offline"; then
   bump 60
 else
@@ -114,9 +123,8 @@ else
     retry "FIX_C_HARD_RESET" "rm -rf node_modules packages/*/node_modules pnpm-lock.yaml && pnpm -w install --no-frozen-lockfile --prefer-offline" || true
     FALLBACK="NONE"
     retry "RETRY_FROZEN_AFTER_C" "pnpm install --frozen-lockfile --prefer-offline" && bump 10
-
   else
-    echo "ELSE: LOCKFILE MISMATCH DEGIL -> RAPORLA VE BITIR"
+    echo "ELSE: LOCKFILE MISMATCH DEGIL -> RAPORLA"
     ERR=$((ERR+1))
   fi
 fi
