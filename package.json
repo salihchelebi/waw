@@ -33,7 +33,8 @@
         "quick": "pretty-quick --staged",
         "postinstall": "husky install",
         "migration:create": "pnpm typeorm migration:create",
-        "start:render": "sh ./scripts/render-start.sh"
+        "start:render": "sh ./scripts/render-start.sh",
+        "preflight:render": "sh ./scripts/render-preflight.sh"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
