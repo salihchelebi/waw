@@ -18,7 +18,6 @@ ENV NODE_OPTIONS=--max-old-space-size=8192
 
 WORKDIR /usr/src/flowise
 
-RUN addgroup -S nodejs && adduser -S node -G nodejs
 RUN chown -R node:node /usr/src/flowise
 USER node
 
@@ -32,7 +31,9 @@ RUN pnpm install --frozen-lockfile
 
 COPY --chown=node:node . .
 
-RUN pnpm build
+RUN pnpm --filter ./packages/components build \
+    && pnpm --filter ./packages/ui build \
+    && pnpm --filter ./packages/server build
 
 EXPOSE 3000
 CMD ["node", "scripts/render-start.js"]
