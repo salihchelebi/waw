@@ -33,11 +33,10 @@ run_build() {
   fi
 
   log "BUILD fail: ${PKG}"
-  log "---- first ${FIRST_N} lines ----"
-  sed -n "1,${FIRST_N}p" "${TMP_LOG}"
-  log "---- last ${LAST_N} lines ----"
-  tail -n "${LAST_N}" "${TMP_LOG}"
-  summarize_errors "${TMP_LOG}"
+  log "---- first 160 lines ----"
+  sed -n '1,160p' "${TMP_LOG}"
+  log "---- last 40 lines ----"
+  tail -n 40 "${TMP_LOG}"
 
   if grep -q "TS[0-9][0-9][0-9][0-9]" "${TMP_LOG}"; then
     log "CLASS=BUILD/COMPILE (TypeScript)"
