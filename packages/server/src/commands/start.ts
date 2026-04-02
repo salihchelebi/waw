@@ -1,11 +1,13 @@
 import * as Server from '../index'
 import * as DataSource from '../DataSource'
 import logger from '../utils/logger'
+import { loadConfigFromDbFirst } from '../utils/dbFirstEnvLoader'
 import { BaseCommand } from './base'
 
 export default class Start extends BaseCommand {
     async run(): Promise<void> {
         logger.info('Starting Flowise...')
+        await loadConfigFromDbFirst()
         await DataSource.init()
         await Server.start()
     }
