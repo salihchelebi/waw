@@ -2,9 +2,23 @@
 set -eu
 
 MODE="${1:-full}"
+FIRST_N="${RENDER_PREFLIGHT_FIRST_N:-260}"
+LAST_N="${RENDER_PREFLIGHT_LAST_N:-80}"
+
+if [ "${RENDER_PREFLIGHT_DEBUG:-0}" = "1" ]; then
+  set -x
+fi
+
+corepack prepare pnpm@10.26.0 --activate >/dev/null 2>&1 || true
 
 log() {
   printf '%s\n' "[render-preflight] $*"
+}
+
+summarize_errors() {
+  LOG_FILE="$1"
+  log "---- error summary (top 120 matched lines) ----"
+  grep -E "error|TS[0-9]{4}|Cannot find module|ERR_PNPM_" "${LOG_FILE}" | head -n 120 || true
 }
 
 run_build() {
@@ -40,6 +54,12 @@ run_build() {
 
 log "Node: $(node -v)"
 log "pnpm: $(pnpm -v)"
+
+NODE_MAJOR="$(node -p "process.versions.node.split('.')[0]")"
+if [ "${NODE_MAJOR}" != "20" ]; then
+  log "CLASS=ENGINE/TOOLCHAIN (expected Node 20, got $(node -v))"
+  exit 1
+fi
 
 if [ "${MODE}" = "--build-only" ]; then
   run_build "./packages/components"

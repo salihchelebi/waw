@@ -34,7 +34,8 @@
         "postinstall": "husky install",
         "migration:create": "pnpm typeorm migration:create",
         "start:render": "sh ./scripts/render-start.sh",
-        "preflight:render": "sh ./scripts/render-preflight.sh"
+        "preflight:render": "sh ./scripts/render-preflight.sh",
+        "diagnostic:render": "sh ./scripts/render-diagnostic.sh"
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,json,md}": "eslint --fix"
