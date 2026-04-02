@@ -206,9 +206,9 @@ export const loadConfigFromDbFirst = async (): Promise<DbFirstLoaderSummary> => 
         applyDefaults()
 
         logger.info(
-            `[db-first-loader] source=db-first tables=${discoveredTables.length} db=${loadedFromDb.length} envFallback=${fallbackToEnv.length} activeSet=${
-                chain.activeSet ?? 'n/a'
-            }`
+            `[db-first-loader] source=db-first tables=${discoveredTables.length} db=${loadedFromDb.length} envFallback=${
+                fallbackToEnv.length
+            } activeSet=${chain.activeSet ?? 'n/a'}`
         )
         if (process.env.DATABASE_URL) logger.info(`[db-first-loader] DATABASE_URL=present(${mask(process.env.DATABASE_URL)})`)
         if (process.env.DATABASE_PASSWORD) {

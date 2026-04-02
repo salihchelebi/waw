@@ -31,7 +31,9 @@ RUN pnpm install --frozen-lockfile
 
 COPY --chown=node:node . .
 
-RUN pnpm build
+RUN pnpm --filter ./packages/components build \
+    && pnpm --filter ./packages/ui build \
+    && pnpm --filter ./packages/server build
 
 EXPOSE 3000
 CMD ["node", "scripts/render-start.js"]
