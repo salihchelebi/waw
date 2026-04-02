@@ -8,6 +8,7 @@ import { CachePool } from '../CachePool'
 import { QueueEvents, QueueEventsListener } from 'bullmq'
 import { AbortControllerPool } from '../AbortControllerPool'
 import { UsageCacheManager } from '../UsageCacheManager'
+import { loadConfigFromDbFirst } from '../utils/dbFirstEnvLoader'
 
 interface CustomListener extends QueueEventsListener {
     abort: (args: { id: string }, id: string) => void
@@ -57,6 +58,7 @@ export default class Worker extends BaseCommand {
 
     async prepareData() {
         // Init database
+        await loadConfigFromDbFirst()
         const appDataSource = getDataSource()
         await appDataSource.initialize()
         await appDataSource.runMigrations({ transaction: 'each' })
